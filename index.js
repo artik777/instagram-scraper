@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const secrets = require('./secrets');
  
 (async () => {
-  const browser = await puppeteer.launch({headless: false});
+  const browser = await puppeteer.launch(/* {headless: false} */);
   const page = await browser.newPage();
   await page.goto('https://instagram.com');
 
@@ -15,18 +15,18 @@ const secrets = require('./secrets');
   loginButton.click();
   await page.waitForNavigation();
 
-  //Xpath method (last resort :D)
-  // const loginButton = await page.$x('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[3]/button')
-  // loginButton[0].click();
-  
-  const USERNAME = 'aaronjack'
-  await page.goto(`https://www.instagram.com/${USERNAME}/`);
-  await page.waitForSelector('article a');
-  await (await page.$('article a')).click();
-  await page.waitFor(1000);
-  await (await page.$$('button'))[5].click();
+  const USERNAMES = ['aaronjack']
+  for(let USERNAME of USERNAMES) {
+    await page.goto(`https://www.instagram.com/${USERNAME}/`);
+    await page.waitForSelector('img');
+    const imgSrc = await page.$eval('img', el => el.getAttribute('src'));
+    const headerData = await page.$$eval('header li', els => els.map(el => el.textContent));
+    const name = await page.$eval('header h1', el => el.textContent);
+    const desc = await page.$$eval('span', els => els[8].textContent);
+    const profile = {imgSrc, headerData, name, desc};
+    console.log({profile});
 
+  }
 
-
-  await browser.close();
+  // await browser.close();
 })();
